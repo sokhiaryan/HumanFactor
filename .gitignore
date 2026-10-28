@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+data/*.db
+data/*.db-*
+*.log
+.DS_Store
+
+# Local editor/agent tooling
+.claude/
