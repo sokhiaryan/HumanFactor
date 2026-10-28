@@ -217,10 +217,11 @@ export function createApp({ db, config, staticDir, disableRateLimits }: AppOptio
 
   admin.get("/me", (_req, res) => res.json({ ok: true }));
 
+  const instance = config.demoInstance ? "demo" : "live";
   const includeDemo = (req: Request) => req.query.includeDemo === "1" || req.query.includeDemo === "true";
 
   admin.get("/analytics", (req, res) => {
-    res.json(buildAnalytics(db, { includeDemo: includeDemo(req) }));
+    res.json(buildAnalytics(db, { includeDemo: includeDemo(req), instance }));
   });
 
   admin.get("/answer-key", (_req, res) => {
@@ -259,19 +260,19 @@ export function createApp({ db, config, staticDir, disableRateLimits }: AppOptio
     res.send(content);
   };
   const stamp = () => new Date().toISOString().slice(0, 10);
-  const suffix = (req: Request) => (includeDemo(req) ? "-INCLUDING-DEMO" : "");
+  const suffix = (req: Request) => `${includeDemo(req) ? "-INCLUDING-DEMO" : ""}${config.demoInstance ? "-DEMO-INSTANCE" : ""}`;
 
   admin.get("/export/responses.csv", (req, res) => {
-    sendFile(res, `hlac-responses-${stamp()}${suffix(req)}.csv`, "text/csv", responsesCsv(repo.loadResponses(db, includeDemo(req))));
+    sendFile(res, `humanfactor-responses-${stamp()}${suffix(req)}.csv`, "text/csv", responsesCsv(repo.loadResponses(db, includeDemo(req))));
   });
   admin.get("/export/items.csv", (req, res) => {
-    sendFile(res, `hlac-items-${stamp()}${suffix(req)}.csv`, "text/csv", itemsCsv(buildAnalytics(db, { includeDemo: includeDemo(req) })));
+    sendFile(res, `humanfactor-items-${stamp()}${suffix(req)}.csv`, "text/csv", itemsCsv(buildAnalytics(db, { includeDemo: includeDemo(req), instance })));
   });
   admin.get("/export/codebook.csv", (_req, res) => {
-    sendFile(res, `hlac-codebook.csv`, "text/csv", codebookCsv());
+    sendFile(res, `humanfactor-codebook${config.demoInstance ? "-DEMO-INSTANCE" : ""}.csv`, "text/csv", codebookCsv());
   });
   admin.get("/export/summary.md", (req, res) => {
-    sendFile(res, `hlac-summary-${stamp()}${suffix(req)}.md`, "text/markdown", summaryMarkdown(buildAnalytics(db, { includeDemo: includeDemo(req) })));
+    sendFile(res, `humanfactor-summary-${stamp()}${suffix(req)}.md`, "text/markdown", summaryMarkdown(buildAnalytics(db, { includeDemo: includeDemo(req), instance })));
   });
 
   api.use("/admin", admin);

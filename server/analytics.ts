@@ -138,7 +138,7 @@ function selfAssessment(rs: StoredResponse[]): SelfAssessmentStats {
   };
 }
 
-export function buildAnalytics(db: DB, opts: { includeDemo: boolean }): AnalyticsReport {
+export function buildAnalytics(db: DB, opts: { includeDemo: boolean; instance?: "live" | "demo" }): AnalyticsReport {
   const all = loadResponses(db, opts.includeDemo);
   const byStage: Record<Stage, StoredResponse[]> = {
     pre: all.filter((r) => r.stage === "pre"),
@@ -308,6 +308,7 @@ export function buildAnalytics(db: DB, opts: { includeDemo: boolean }): Analytic
   return {
     generatedAt: new Date().toISOString(),
     includesDemo: opts.includeDemo,
+    instance: opts.instance ?? "live",
     demoResponsesInDatabase: demoResponseCount(db),
     survey: { version: SURVEY_VERSION, title: SURVEY_TITLE, knowledgeMax: KNOWLEDGE_MAX, knowledgeItemCount: KNOWLEDGE_ITEMS.length },
     overview: {

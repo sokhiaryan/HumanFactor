@@ -12,6 +12,7 @@ export function testConfig(overrides: Partial<Config> = {}): Config {
     adminPassword: ADMIN_PASSWORD,
     sessionSecret: "x".repeat(64),
     trustProxy: false,
+    demoInstance: false,
     ...overrides,
   };
 }

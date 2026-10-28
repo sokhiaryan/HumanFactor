@@ -30,13 +30,19 @@ export default function App() {
 
 function NotFound() {
   return (
-    <main className="shell shell--narrow center-stack">
-      <Brand />
-      <h1 className="display">Page not found</h1>
-      <p className="muted">Check the link you were given, or go back to the start.</p>
-      <Link className="btn btn--primary" to="/">
-        Go to the start
-      </Link>
-    </main>
+    <>
+      <header className="masthead">
+        <div className="shell masthead__inner">
+          <Brand />
+        </div>
+      </header>
+      <main className="shell shell--narrow center-stack">
+        <h1 className="display display--sm">This page isn't on the form.</h1>
+        <p className="muted">Check the link you were given, or go back to the start.</p>
+        <Link className="btn btn--primary" to="/">
+          Go to the start
+        </Link>
+      </main>
+    </>
   );
 }

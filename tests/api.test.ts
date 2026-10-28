@@ -280,7 +280,7 @@ describe("exports", () => {
     const agent = await login();
     const res = await agent.get("/api/admin/export/responses.csv").expect(200);
     expect(res.headers["content-type"]).toContain("text/csv");
-    expect(res.headers["content-disposition"]).toMatch(/attachment; filename="hlac-responses-\d{4}-\d{2}-\d{2}\.csv"/);
+    expect(res.headers["content-disposition"]).toMatch(/attachment; filename="humanfactor-responses-\d{4}-\d{2}-\d{2}\.csv"/);
     const [header, ...rows] = res.text.trim().split("\r\n").map((l) => l.split(","));
     for (const col of [
       "response_id",

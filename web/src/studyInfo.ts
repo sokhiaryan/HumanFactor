@@ -2,9 +2,9 @@
 // ✏️  Fill these in before sharing the survey links.
 
 export const STUDY = {
-  title: "Spot the Hook",
-  subtitle: "A short study on recognising phishing and online scams",
-  team: "HLAC Security Awareness project team",
+  title: "HumanFactor",
+  subtitle: "A short study on how people recognise phishing and online scams",
+  team: "HumanFactor project team",
   course: "Human-Centred Security Awareness (HLAC)",
   institution: "your university",
   /** Where participants can ask questions or request withdrawal. */

@@ -11,6 +11,8 @@ export interface Config {
   adminPassword: string | null;
   sessionSecret: string;
   trustProxy: boolean;
+  /** Marks this server as a synthetic demonstration instance (DEMO_INSTANCE=true). */
+  demoInstance: boolean;
 }
 
 export class ConfigError extends Error {}
@@ -46,5 +48,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     adminPassword,
     sessionSecret,
     trustProxy: env.TRUST_PROXY === "true",
+    demoInstance: env.DEMO_INSTANCE === "true",
   };
 }

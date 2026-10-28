@@ -1,23 +1,32 @@
+import { Link } from "react-router-dom";
 import { Brand } from "../components/Brand";
 import { PrivacyNotice } from "../components/PrivacyNotice";
 import { STUDY } from "../studyInfo";
 
 export default function Privacy() {
   return (
-    <div className="shell">
-      <header className="survey-top__inner">
-        <Brand />
+    <>
+      <header className="masthead">
+        <div className="shell masthead__inner">
+          <Brand />
+        </div>
       </header>
-      <main className="hero" style={{ paddingTop: 48 }}>
-        <p className="eyebrow">Participant information</p>
-        <h1 className="display" style={{ margin: "12px 0 16px" }}>
+      <main className="shell shell--narrow" style={{ padding: "48px 20px 24px" }}>
+        <h1 className="display display--sm">
           Privacy &amp; <em>consent</em>
         </h1>
-        <p className="lede">{STUDY.subtitle}. Here is exactly what we collect, why, and what we don't.</p>
+        <p className="lede" style={{ marginTop: 18 }}>
+          {STUDY.subtitle}. Here is exactly what we collect, why, and what we don't.
+        </p>
         <hr className="divider" />
         <PrivacyNotice />
       </main>
-      <footer className="footer">{STUDY.course}</footer>
-    </div>
+      <footer className="shell shell--narrow footer">
+        <div className="footer__inner">
+          <span>{STUDY.course}</span>
+          <Link to="/">Back to HumanFactor</Link>
+        </div>
+      </footer>
+    </>
   );
 }

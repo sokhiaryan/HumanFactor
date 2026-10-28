@@ -18,12 +18,13 @@ import type {
   SubmitResponse,
 } from "../../../shared/types";
 import { api, ApiRequestError } from "../api";
-import { Brand } from "../components/Brand";
+import { Brand, BrandMark, VitruvianDrawing } from "../components/Brand";
 import {
   IconAlert,
   IconArrowLeft,
   IconArrowRight,
   IconCheck,
+  IconChevronDown,
   IconClock,
   IconCopy,
   IconDownload,
@@ -333,8 +334,8 @@ export default function Survey({ stage }: { stage: Stage }) {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <header className="survey-top" data-scrolled={scrolled}>
-        <div className="shell survey-top__inner">
+      <header className="survey-top masthead" data-scrolled={scrolled}>
+        <div className={`shell${phase.name === "intro" ? "" : " shell--narrow"} masthead__inner`}>
           <Brand />
           <span className="spacer" />
           {showChrome && (
@@ -343,20 +344,39 @@ export default function Survey({ stage }: { stage: Stage }) {
             </span>
           )}
         </div>
-        <div
-          className="progress"
-          role="progressbar"
-          aria-label="Survey progress"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(progress * 100)}
-        >
-          <div className="progress__bar" style={{ transform: `scaleX(${progress})` }} />
-        </div>
+        {(phase.name === "question" || phase.name === "review") && total > 0 && (
+          <div className="shell shell--narrow">
+            <div
+              className="ruler-row"
+              role="progressbar"
+              aria-label="Survey progress"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(progress * 100)}
+              aria-valuetext={
+                phase.name === "review"
+                  ? `Review: ${questions.filter((q) => isAnswered(draft?.answers[q.id])).length} of ${total} answered`
+                  : `Question ${phase.index + 1} of ${total}`
+              }
+            >
+              <div className="ruler" aria-hidden="true">
+                {questions.map((q, i) => {
+                  const current = phase.name === "question" ? phase.index : total;
+                  return <span key={q.id} className="ruler__tick" data-state={i < current ? "done" : i === current ? "current" : "todo"} />;
+                })}
+              </div>
+              <span className="ruler-label" aria-hidden="true">
+                {phase.name === "question"
+                  ? `${String(phase.index + 1).padStart(2, "0")}/${String(total).padStart(2, "0")}`
+                  : "Review"}
+              </span>
+            </div>
+          </div>
+        )}
       </header>
 
       <main id="main" className="survey-main">
-        <div className="shell shell--narrow">
+        <div className={`shell${phase.name === "intro" ? "" : " shell--narrow"}`}>
           <div ref={focusRef} tabIndex={-1} style={{ outline: "none", boxShadow: "none" }} aria-live="off">
             {banner && (
               <div className="notice notice--bad" role="alert" style={{ marginBottom: 24 }}>
@@ -428,7 +448,9 @@ export default function Survey({ stage }: { stage: Stage }) {
               <div key={phase.index} className={`enter${phase.dir < 0 ? " enter--back" : ""}`}>
                 <div className="step-meta">
                   <span>
-                    Question {phase.index + 1} of {total}
+                    <span className="sr-only">Question </span>
+                    <span className="step-meta__no">Q{String(phase.index + 1).padStart(2, "0")}</span>
+                    <span className="sr-only"> of {total}</span>
                   </span>
                   <span className="step-meta__sep" aria-hidden="true" />
                   <span>{SECTION_LABEL[questions[phase.index].section]}</span>
@@ -463,12 +485,8 @@ export default function Survey({ stage }: { stage: Stage }) {
 
             {phase.name === "already" && (
               <div className="stack" style={{ ["--gap" as string]: "18px" }}>
-                <div className="done-mark" aria-hidden="true">
-                  <svg width="28" height="28" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <path d="M4.5 10.5l3.5 3.5 7.5-8" />
-                  </svg>
-                </div>
-                <h1 className="display">Already recorded</h1>
+                <Stamp />
+                <h1 className="display display--sm">Already recorded</h1>
                 <p className="lede">{phase.message}</p>
                 <Link to="/" className="btn">
                   Back to the start
@@ -520,92 +538,100 @@ function Intro(props: {
   const { stage, survey, resumable, completion } = props;
   const answered = resumable ? Object.keys(resumable.answers).length : 0;
   return (
-    <div className="enter">
-      <p className="eyebrow">{stage === "pre" ? "Part 1 of 2 · Before the campaign" : "Part 2 of 2 · After the campaign"}</p>
-      <h1 className="display" style={{ margin: "14px 0 18px" }}>
-        {stage === "pre" ? (
-          <>
-            Can you spot <em>the hook?</em>
-          </>
-        ) : (
-          <>
-            Welcome <em>back.</em>
-          </>
-        )}
-      </h1>
-      <p className="lede">
-        {stage === "pre"
-          ? "We're students running an awareness campaign about phishing and online scams. This short survey shows what people already know before the campaign, so we can measure what changes afterwards."
-          : "Thanks for coming back. This follow-up uses the same everyday scenarios as the first survey so we can see what changed. Have your participant code from the first survey ready."}
-      </p>
+    <div className="enter poster" style={{ paddingTop: 0 }}>
+      <div>
+        <h1 className="display" style={{ margin: "0 0 18px" }}>
+          {stage === "pre" ? (
+            <>
+              Could you spot <em>a scam?</em>
+            </>
+          ) : (
+            <>
+              Welcome <em>back.</em>
+            </>
+          )}
+        </h1>
+        <p className="lede">
+          {stage === "pre"
+            ? "We're students running an awareness campaign about phishing and online scams. This short survey shows what people already know before the campaign, so we can measure what changes afterwards."
+            : "Thanks for coming back. This follow-up uses the same everyday scenarios as the first survey so we can see what changed. Have your participant code from the first survey ready."}
+        </p>
 
-      <div className="facts">
-        <div className="fact">
-          <div className="fact__value row" style={{ gap: 6 }}>
-            <IconClock size={16} /> ~{survey.estimatedMinutes} min
+        <div className="facts" style={{ margin: "28px 0" }}>
+          <div className="fact">
+            <div className="fact__value">
+              <IconClock size={18} /> ~{survey.estimatedMinutes} min
+            </div>
+            <div className="fact__label">{survey.questions.length} short questions</div>
           </div>
-          <div className="fact__label">{survey.questions.length} short questions</div>
-        </div>
-        <div className="fact">
-          <div className="fact__value row" style={{ gap: 6 }}>
-            <IconEyeOff size={16} /> Anonymous
+          <div className="fact">
+            <div className="fact__value">
+              <IconEyeOff size={18} /> Anonymous
+            </div>
+            <div className="fact__label">No name, email or login</div>
           </div>
-          <div className="fact__label">No name, email or login</div>
-        </div>
-        <div className="fact">
-          <div className="fact__value row" style={{ gap: 6 }}>
-            <IconUndo size={16} /> Auto-saved
-          </div>
-          <div className="fact__label">Pick up where you left off</div>
-        </div>
-      </div>
-
-      <p className="muted" style={{ marginBottom: 28 }}>
-        This isn't a test of you — there are no grades, and <strong>“I'm not sure”</strong> is always a fine answer. Please
-        answer on your own, without looking things up.
-      </p>
-
-      {completion && !resumable && (
-        <div className="notice notice--good" style={{ marginBottom: 20 }}>
-          <IconCheck size={18} />
-          <div style={{ flex: 1 }}>
-            You already completed this survey on this device
-            {completion.code ? (
-              <>
-                {" "}
-                — your code is <span className="mono">{formatCode(completion.code)}</span>
-              </>
-            ) : null}
-            . Only take it again if someone else is using this device.{" "}
-            <button className="btn btn--ghost btn--sm" style={{ marginLeft: -8 }} onClick={props.onClearCompletion}>
-              Someone else is taking it
-            </button>
+          <div className="fact">
+            <div className="fact__value">
+              <IconUndo size={18} /> Auto-saved
+            </div>
+            <div className="fact__label">Pick up where you left off</div>
           </div>
         </div>
-      )}
 
-      {resumable ? (
-        <div className="stack">
-          <div className="notice">
-            <IconInfo size={18} />
-            <div>
-              You have a survey in progress on this device ({answered} of {survey.questions.length} answered).
+        <p className="muted" style={{ marginBottom: 28 }}>
+          This isn't a test of you — there are no grades, and <strong>“I'm not sure”</strong> is always a fine answer. Please
+          answer on your own, without looking things up.
+        </p>
+
+        {completion && !resumable && (
+          <div className="notice notice--good" style={{ marginBottom: 20 }}>
+            <IconCheck size={18} />
+            <div style={{ flex: 1 }}>
+              You already completed this survey on this device
+              {completion.code ? (
+                <>
+                  {" "}
+                  — your code is <span className="mono">{formatCode(completion.code)}</span>
+                </>
+              ) : null}
+              . Only take it again if someone else is using this device.{" "}
+              <button className="btn btn--ghost btn--sm" style={{ marginLeft: -8 }} onClick={props.onClearCompletion}>
+                Someone else is taking it
+              </button>
             </div>
           </div>
-          <div className="row">
-            <button className="btn btn--primary btn--lg" onClick={() => props.onResume(resumable)}>
-              Continue where I left off <IconArrowRight size={16} />
-            </button>
-            <button className="btn btn--ghost" onClick={props.onDiscard}>
-              Start over
-            </button>
+        )}
+
+        {resumable ? (
+          <div className="stack">
+            <div className="notice">
+              <IconInfo size={18} />
+              <div>
+                You have a survey in progress on this device ({answered} of {survey.questions.length} answered).
+              </div>
+            </div>
+            <div className="row">
+              <button className="btn btn--primary btn--lg" onClick={() => props.onResume(resumable)}>
+                Continue where I left off <IconArrowRight size={16} />
+              </button>
+              <button className="btn btn--ghost" onClick={props.onDiscard}>
+                Start over
+              </button>
+            </div>
           </div>
-        </div>
-      ) : (
-        <button className="btn btn--primary btn--lg" onClick={props.onStart} disabled={!!completion}>
-          Get started <IconArrowRight size={16} />
-        </button>
-      )}
+        ) : (
+          <button className="btn btn--primary btn--lg" onClick={props.onStart} disabled={!!completion}>
+            Get started <IconArrowRight size={16} />
+          </button>
+        )}
+      </div>
+      <figure className="plate" aria-hidden="true">
+        <VitruvianDrawing />
+        <figcaption className="plate__caption">
+          <span>{stage === "pre" ? "PART 1 / BEFORE" : "PART 2 / AFTER"}</span>
+          <span>FIG. {stage === "pre" ? "1" : "2"}</span>
+        </figcaption>
+      </figure>
     </div>
   );
 }
@@ -614,14 +640,13 @@ function Consent({ busy, onAgree, onBack }: { busy: boolean; onAgree: () => void
   const [agreed, setAgreed] = useState(false);
   return (
     <div className="enter">
-      <p className="eyebrow">Before you begin</p>
-      <h1 className="display" style={{ margin: "14px 0 8px", fontSize: "clamp(2rem, 5vw, 2.6rem)" }}>
-        Your privacy &amp; <em>consent</em>
+      <h1 className="display display--sm">
+        Before you begin: <em>your consent</em>
       </h1>
       <ul className="consent-list">
         <li>
           <span className="consent-list__icon">
-            <IconEyeOff size={16} />
+            <IconEyeOff size={17} />
           </span>
           <span>
             <strong>Anonymous.</strong> We never ask for your name, email or student ID, and we don't store your IP address.
@@ -660,7 +685,7 @@ function Consent({ busy, onAgree, onBack }: { busy: boolean; onAgree: () => void
       </details>
 
       <div className="stack" style={{ marginTop: 28 }}>
-        <label className="checkbox-row">
+        <label className={`checkbox-row${agreed ? " is-checked" : ""}`}>
           <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
           <span>I am 18 or older, I have read the information above, and I agree to take part.</span>
         </label>
@@ -721,8 +746,7 @@ function CodeEntry({
   if (noCode) {
     return (
       <div className="enter stack" style={{ ["--gap" as string]: "18px" }}>
-        <p className="eyebrow">No code? No problem</p>
-        <h1 className="h2">You can still take part</h1>
+        <h1 className="display display--sm">No code? You can still take part.</h1>
         <p className="muted">
           Your answers still count towards the overall results. We just won't be able to compare them with your first survey.
         </p>
@@ -740,8 +764,7 @@ function CodeEntry({
 
   return (
     <form className="enter stack" style={{ ["--gap" as string]: "18px" }} onSubmit={check} noValidate>
-      <p className="eyebrow">Your participant code</p>
-      <h1 className="h2">Enter the code from your first survey</h1>
+      <h1 className="display display--sm">Enter the code from your first survey</h1>
       <p className="muted">
         It looks like <span className="mono">K7QM-3XP9</span>. Check your screenshot, notes, or the file you downloaded.
       </p>
@@ -813,22 +836,27 @@ function CodeCard({ code }: { code: string }) {
     }
   };
   return (
-    <div className="code-card">
-      <div className="eyebrow">Your anonymous code</div>
-      <div className="code-value" aria-label={`Your code is ${formatCode(code).split("").join(" ")}`}>
-        {formatCode(code)}
+    <div className="ticket">
+      <div className="ticket__main">
+        <div className="ticket__label">Your anonymous code · admits one to part 2</div>
+        <div className="code-value" aria-label={`Your code is ${formatCode(code).split("").join(" ")}`}>
+          {formatCode(code)}
+        </div>
+        <div className="row">
+          <button className="btn btn--sm" onClick={copy}>
+            {copied ? <IconCheck size={16} /> : <IconCopy size={16} />} {copied ? "Copied" : "Copy"}
+          </button>
+          <button className="btn btn--sm" onClick={() => downloadCode(code)}>
+            <IconDownload size={16} /> Save as file
+          </button>
+        </div>
+        <span className="sr-only" aria-live="polite">
+          {copied ? "Code copied to clipboard" : ""}
+        </span>
       </div>
-      <div className="row" style={{ justifyContent: "center" }}>
-        <button className="btn btn--sm" onClick={copy}>
-          {copied ? <IconCheck size={16} /> : <IconCopy size={16} />} {copied ? "Copied" : "Copy"}
-        </button>
-        <button className="btn btn--sm" onClick={() => downloadCode(code)}>
-          <IconDownload size={16} /> Save as file
-        </button>
+      <div className="ticket__stub" aria-hidden="true">
+        <BrandMark size={44} />
       </div>
-      <span className="sr-only" aria-live="polite">
-        {copied ? "Code copied to clipboard" : ""}
-      </span>
     </div>
   );
 }
@@ -836,8 +864,7 @@ function CodeCard({ code }: { code: string }) {
 function CodeReveal({ code, onContinue }: { code: string; onContinue: () => void }) {
   return (
     <div className="enter stack" style={{ ["--gap" as string]: "20px" }}>
-      <p className="eyebrow">One quick thing</p>
-      <h1 className="h2">Save this code for the follow-up survey</h1>
+      <h1 className="display display--sm">Keep this code for part 2</h1>
       <p className="muted">
         After our campaign we'll ask you to take a short follow-up. Entering this code lets us compare your two sets of answers
         — without ever knowing who you are. Take a screenshot, copy it, or save it as a file.
@@ -871,27 +898,29 @@ function Review(props: {
   const answered = questions.filter((q) => isAnswered(answers[q.id])).length;
   return (
     <div className="enter stack" style={{ ["--gap" as string]: "20px" }}>
-      <p className="eyebrow">Almost done</p>
-      <h1 className="h2">Ready to submit?</h1>
+      <h1 className="display display--sm">Ready to submit?</h1>
       <p className="muted">
         You can still change any answer. Once you submit, your response is final.
       </p>
-      <details className="card card--pad" style={{ padding: 0 }}>
-        <summary className="row" style={{ padding: "16px 20px", cursor: "pointer", fontWeight: 550 }}>
+      <details className="card review" style={{ padding: 0 }} open={answered < questions.length}>
+        <summary className="row" style={{ padding: "16px 20px", cursor: "pointer", fontWeight: 650 }}>
           Review your answers
           <span className="spacer" />
           <span className="muted small">
             {answered} of {questions.length} answered
           </span>
+          <span className="review__chev" aria-hidden="true">
+            <IconChevronDown size={18} />
+          </span>
         </summary>
         <ol style={{ margin: 0, padding: "0 20px 16px 40px" }}>
           {questions.map((q, i) => (
             <li key={q.id} style={{ padding: "10px 0", borderTop: "1px solid var(--line)" }}>
-              <div className="small" style={{ fontWeight: 550 }}>
+              <div className="small" style={{ fontWeight: 600 }}>
                 {q.prompt}
               </div>
               <div className="row small" style={{ marginTop: 4 }}>
-                <span className="muted" style={{ flex: 1 }}>
+                <span className={!isAnswered(answers[q.id]) && q.required ? "review__missing" : "muted"} style={{ flex: 1 }}>
                   {summarize(q, answers[q.id])}
                 </span>
                 <button className="btn btn--ghost btn--sm" onClick={() => props.onEdit(i)}>
@@ -903,7 +932,7 @@ function Review(props: {
         </ol>
       </details>
       <div className="row">
-        <button className="btn btn--accent btn--lg" disabled={props.busy} onClick={props.onSubmit}>
+        <button className="btn btn--marigold btn--lg" disabled={props.busy} onClick={props.onSubmit}>
           {props.busy ? <span className="spinner" aria-hidden="true" /> : <IconCheck size={16} />}
           {props.busy ? "Submitting…" : "Submit my answers"}
         </button>
@@ -918,13 +947,9 @@ function Review(props: {
 function Done({ stage, code }: { stage: Stage; code: string | null }) {
   return (
     <div className="stack" style={{ ["--gap" as string]: "20px" }}>
-      <div className="done-mark" aria-hidden="true">
-        <svg width="28" height="28" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <path d="M4.5 10.5l3.5 3.5 7.5-8" />
-        </svg>
-      </div>
+      <Stamp />
       <h1 className="display">
-        Thank you<em>.</em>
+        Thank <em>you.</em>
       </h1>
       <p className="lede" role="status">
         Your response has been recorded.{" "}
@@ -946,5 +971,29 @@ function Done({ stage, code }: { stage: Stage; code: string | null }) {
         You can close this tab now. <Link to="/privacy">Privacy information</Link>
       </p>
     </div>
+  );
+}
+
+/** The rubber stamp on the completion screen. */
+function Stamp() {
+  return (
+    <svg className="stamp" viewBox="0 0 120 120" fill="none" stroke="currentColor" aria-hidden="true">
+      <defs>
+        <path id="stamp-arc" d="M60 60m-41 0a41 41 0 1 1 82 0a41 41 0 1 1 -82 0" />
+      </defs>
+      <circle cx="60" cy="60" r="56" strokeWidth="3" />
+      <circle cx="60" cy="60" r="49" strokeWidth="1.2" />
+      <text fill="currentColor" stroke="none" fontSize="9" fontWeight="760" letterSpacing="1.5" style={{ fontVariationSettings: '"wdth" 118' }}>
+        <textPath href="#stamp-arc" startOffset="0" textLength="250" lengthAdjust="spacing">
+          RESPONSE RECORDED · HUMANFACTOR ·
+        </textPath>
+      </text>
+      <g transform="translate(36 36) scale(0.75)" strokeWidth="3.4" strokeLinecap="round">
+        <rect x="10" y="12" width="44" height="44" />
+        <circle cx="32" cy="31" r="25" />
+        <circle cx="32" cy="16.6" r="4.2" />
+        <path d="M32 21V39M10 26H54M32 25L13.4 15.2M32 25L50.6 15.2M32 39L28.4 56M32 39L35.6 56M32 39L17 51M32 39L47 51" />
+      </g>
+    </svg>
   );
 }

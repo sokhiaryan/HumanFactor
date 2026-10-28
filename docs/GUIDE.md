@@ -1,4 +1,4 @@
-# Spot the Hook — Team Guide
+# HumanFactor — Team Guide
 
 A complete guide for the HLAC project team: how to run the platform, run the study, use the
 dashboard, export data, and handle participants. No programming knowledge is needed except in the
@@ -28,7 +28,7 @@ sections marked **(maintainer)**.
 
 ## 1. What the platform does
 
-Spot the Hook measures how well people recognise **phishing and social-engineering scams**
+HumanFactor measures how well people recognise **phishing and social-engineering scams**
 before and after our awareness campaign.
 
 | Part | Address | Who uses it |
@@ -186,7 +186,7 @@ The survey works on phones, tablets and computers, in light and dark mode.
 ### Phase 2: Campaign
 
 - Run the awareness campaign (posts, videos, posters, session, and so on).
-- Remind participants to keep their code. A post such as "Got your Spot the Hook code? Keep it
+- Remind participants to keep their code. A post such as "Got your HumanFactor code? Keep it
   for part 2!" helps.
 
 ### Phase 3: POST survey
@@ -223,13 +223,13 @@ Replace `<your-host>` with the deployed address.
 
 **Message template (PRE):**
 
-> 🎣 Can you spot a scam? Take our 7-minute anonymous survey for our HLAC security awareness
+> Can you spot a scam? Take our 7-minute anonymous survey for our HLAC security awareness
 > project. No name or email needed. You'll get a code at the end, so keep it for the short
 > follow-up! 👉 https://&lt;your-host&gt;/s/pre
 
 **Message template (POST):**
 
-> Thanks for taking part in Spot the Hook! Here's the 6-minute follow-up. Have your code from
+> Thanks for taking part in HumanFactor! Here's the 6-minute follow-up. Have your code from
 > the first survey ready 🔑 👉 https://&lt;your-host&gt;/s/post
 
 ---
@@ -338,12 +338,12 @@ The **Exports** tab downloads four files. If *Include demonstration data* is on,
 
 | File | Contents | Use it for |
 |---|---|---|
-| `hlac-responses-DATE.csv` | One row per response, every answer and score | Your own analysis in Excel, Google Sheets, SPSS or R; the data appendix |
-| `hlac-items-DATE.csv` | One row per scenario question: accuracy PRE/POST, change, paired counts, McNemar p | Item-level tables in the report |
-| `hlac-codebook.csv` | Every question and option ID with its full text, whether it's correct, and its misconception | Decoding the short IDs in the responses file |
-| `hlac-summary-DATE.md` | A ready-written summary: sample, scores, paired results, item table, misconceptions, caveats | Starting point for the results section; opens in any text editor and pastes into Word or Google Docs |
+| `humanfactor-responses-DATE.csv` | One row per response, every answer and score | Your own analysis in Excel, Google Sheets, SPSS or R; the data appendix |
+| `humanfactor-items-DATE.csv` | One row per scenario question: accuracy PRE/POST, change, paired counts, McNemar p | Item-level tables in the report |
+| `humanfactor-codebook.csv` | Every question and option ID with its full text, whether it's correct, and its misconception | Decoding the short IDs in the responses file |
+| `humanfactor-summary-DATE.md` | A ready-written summary: sample, scores, paired results, item table, misconceptions, caveats | Starting point for the results section; opens in any text editor and pastes into Word or Google Docs |
 
-### Columns in `hlac-responses-*.csv`
+### Columns in `humanfactor-responses-*.csv`
 
 | Column | Meaning |
 |---|---|
@@ -424,28 +424,39 @@ Nothing more to do. If they believe someone else used their code, handle it as a
 
 ## 10. Demonstration data
 
-To preview the dashboard with realistic-looking numbers before real data exists, a maintainer can
-run:
+There are two ways to see the dashboard with data before real participants arrive. **Use the
+demo instance for presentations** (for example, showing the professor).
+
+### Demo instance (recommended)
+
+A separate database, `data/demo.db`, holds a realistic **synthetic** dataset: 64 PRE and 51 POST
+responses, 42 matched pairs, abandoned sessions, lost codes, skipped optional questions, and a
+moderate, imperfect improvement. The responses are generated from a statistical model of
+students' knowledge, confidence and campaign exposure. They are stored exactly like real responses,
+through the same code paths, so every chart and export behaves as it will on live data. But they
+live in their own file and can never mix with real data.
 
 ```bash
-npm run db:seed-demo
+npm run demo:reset    # (re)create the synthetic dataset — deterministic, same numbers every time
+npm run demo          # run the site + dashboard on the demo database
+npm run demo:verify   # independently recompute 184 statistics from raw SQL and compare
 ```
 
-This adds about 68 **fake** responses, flagged as demo.
+- The dashboard shows a **Synthetic demonstration dataset** marker on every tab, and exports are
+  named `…-DEMO-INSTANCE`. Say plainly that it's synthetic when you present it.
+- `demo:seed` and `demo:reset` **refuse** to write to the real database.
+- `demo:reset` empties and refills the demo database in place, so it works even while
+  `npm run demo` is running.
+- `npm run demo:verify -- --db ./data/hlac.db` runs the same consistency check on the real data.
 
-- They're **hidden by default**. Turn on *Include demonstration data* in the dashboard to see
-  them.
-- While it's on, an orange **DEMONSTRATION DATA — not real participants** banner shows on every
-  tab.
-- Exports made with it on are clearly named and labelled.
+### Flagged demo rows (legacy)
 
-Remove them all before collecting real data (real responses are untouched):
+`npm run db:seed-demo` adds about 68 fake responses *to the real database*, flagged
+`is_demo = 1`. They're hidden unless you tick *Include demonstration data*, and
+`npm run db:purge-demo` removes them. Prefer the demo instance; if you use this, purge before
+collecting real data.
 
-```bash
-npm run db:purge-demo
-```
-
-**Never** put demo numbers in the report or presentation.
+**Never** put demo numbers in the report or presentation as findings.
 
 ---
 
@@ -500,7 +511,7 @@ still the example value. Check the host's logs if a deploy fails.
 
 ## 13. Backups and resetting (maintainer)
 
-- **Easiest backup:** download `hlac-responses-*.csv` from the dashboard regularly, e.g. daily
+- **Easiest backup:** download `humanfactor-responses-*.csv` from the dashboard regularly, e.g. daily
   during collection.
 - **Full backup:** the entire dataset is one file (`DATABASE_PATH`). Copy it while the server is
   stopped, or live with:

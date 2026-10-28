@@ -1,4 +1,4 @@
-# Spot the Hook — HLAC security awareness survey
+# HumanFactor — HLAC security awareness study
 
 An anonymous PRE/POST assessment platform for the HLAC *Design and Evaluate a Security Awareness
 Program* assignment. Participants complete a short scenario-based survey on **phishing and social
@@ -14,11 +14,39 @@ with paired PRE/POST analytics and exports for the report.
 - **Real persistence**: SQLite with versioned migrations. Scoring and validation happen only on
   the server.
 
+📊 **[Analytics demonstration report](docs/DEMO_REPORT.md)**: the study design and the full
+analysis the dashboard produces (sample, paired PRE/POST comparison, item and topic accuracy,
+misconceptions, perceived vs demonstrated awareness), with screenshots. Prepared for review
+before deployment.
+
 📘 **New to the project? Start with the [Team Guide](docs/GUIDE.md)**: setup, running the
 study, every dashboard tab, exports, participant support and troubleshooting.
 
 The question rationale, scoring rules and statistical methods are in
-**[docs/SURVEY_DESIGN.md](docs/SURVEY_DESIGN.md)**.
+**[docs/SURVEY_DESIGN.md](docs/SURVEY_DESIGN.md)**. The visual system is in
+**[docs/DESIGN.md](docs/DESIGN.md)**, and the latest pre-deployment audit, with screenshots and
+blockers, is in **[docs/audit/AUDIT_REPORT.md](docs/audit/AUDIT_REPORT.md)**.
+
+---
+
+## Dashboard analytics
+
+Screenshots of the team dashboard running the demonstration dataset (115 responses, 42 matched
+PRE/POST pairs). The full walkthrough is in the
+[analytics demonstration report](docs/DEMO_REPORT.md).
+
+| | |
+|---|---|
+| ![Overview](docs/audit/screenshots/10-dashboard-overview.jpg) **Overview**: responses, completion, matched pairs, data-quality checks | ![Score distribution](docs/audit/screenshots/11-dashboard-distribution.jpg) **Score distribution**: PRE vs POST, as a share of each group |
+| ![Paired comparison](docs/audit/screenshots/13-dashboard-paired.jpg) **PRE vs POST**: paired change with 95% CI, t-test, Wilcoxon, effect size, slope chart | ![Questions](docs/audit/screenshots/12-dashboard-questions.jpg) **Questions**: accuracy by topic and by scenario, with change |
+| ![Perception](docs/audit/screenshots/14-dashboard-perception.jpg) **Perception**: confidence and self-estimate vs actual score (calibration) | ![Exports](docs/audit/screenshots/15-dashboard-exports.jpg) **Exports**: responses CSV, item summary, Markdown report, codebook |
+| ![Dark mode](docs/audit/screenshots/16-dashboard-paired-dark.jpg) **Dark mode** | ![Mobile](docs/audit/screenshots/17-dashboard-mobile.jpg) **Mobile** (375px) |
+
+Participant survey:
+
+| | | |
+|---|---|---|
+| ![Landing](docs/audit/screenshots/01-landing-desktop.jpg) Landing | ![Scenario](docs/audit/screenshots/06-scenario-email-mobile.jpg) Scenario question | ![Completion](docs/audit/screenshots/09b-done-stamp-mobile.jpg) Completion and anonymous code |
 
 ---
 
@@ -74,7 +102,10 @@ channels you actually used.
 | `npm start` | Production server: API + built website on `PORT` |
 | `npm test` | Run the automated test suite |
 | `npm run db:init` | Create the database / apply pending migrations (also happens on every start) |
-| `npm run db:seed-demo` | Insert **clearly flagged** demonstration responses |
+| `npm run demo:reset` | Build the separate synthetic **demo database** (`data/demo.db`) |
+| `npm run demo` | Run the site and dashboard on the demo database (marked as synthetic) |
+| `npm run demo:verify` | Recompute 184 statistics from raw SQL and compare with the dashboard |
+| `npm run db:seed-demo` | Insert **clearly flagged** demonstration responses into the real DB (legacy) |
 | `npm run db:purge-demo` | Delete all demonstration rows (real data untouched) |
 
 ---

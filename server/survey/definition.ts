@@ -1,4 +1,4 @@
-// The HLAC phishing & social-engineering assessment.
+// The HumanFactor phishing & social-engineering assessment (HLAC course project).
 //
 // This file is the single source of truth for the survey: wording, order, which stage
 // shows each question, and the server-only answer key. The browser only ever receives
@@ -14,7 +14,7 @@
 import type { Option, PublicQuestion, Stage } from "../../shared/types.js";
 
 export const SURVEY_VERSION = "2026.1";
-export const SURVEY_TITLE = "Spot the Hook";
+export const SURVEY_TITLE = "HumanFactor";
 export const SURVEY_TOPIC = "Phishing & social engineering";
 export const ESTIMATED_MINUTES: Record<Stage, number> = { pre: 7, post: 6 };
 

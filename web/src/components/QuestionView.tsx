@@ -93,7 +93,7 @@ export function QuestionView({ question: q, value, onChange, order, error }: Pro
           {options.map((opt, i) => {
             const checked = q.kind === "single" ? value === opt.id : Array.isArray(value) && value.includes(opt.id);
             return (
-              <label key={opt.id} className={`option${opt.exclusive ? " option--quiet" : ""}`}>
+              <label key={opt.id} className={`option${opt.exclusive ? " option--quiet" : ""}${checked ? " is-checked" : ""}`}>
                 <input
                   type={q.kind === "single" ? "radio" : "checkbox"}
                   name={q.id}
@@ -134,7 +134,7 @@ export function QuestionView({ question: q, value, onChange, order, error }: Pro
               const v = q.scale!.min + i;
               const word = q.scale!.labels?.[i];
               return (
-                <label key={v} className="scale__btn">
+                <label key={v} className={`scale__btn${value === v ? " is-checked" : ""}`}>
                   <input
                     type="radio"
                     name={q.id}

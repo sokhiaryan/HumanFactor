@@ -12,15 +12,16 @@ import type {
 import { api, ApiRequestError } from "../api";
 import { LikertChart, PairBars, ScoreHistogram, ShareBar, SlopeChart } from "./charts";
 import { ci, duration, int, num, pct, pp, pval, signed, signedCi } from "./format";
+import { IconChart, IconCheck, IconDownload } from "../components/icons";
+import { IconChevronDown, IconTrendDown, IconTrendFlat, IconTrendUp } from "./icons";
 
 const STAGE_LABEL: Record<Stage, string> = { pre: "PRE", post: "POST" };
 
 // --- Building blocks ------------------------------------------------------------------
 
-export function SectionHeader({ eyebrow, title, children }: { eyebrow?: string; title: string; children?: ReactNode }) {
+export function SectionHeader({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <header className="section-header">
-      {eyebrow && <p className="eyebrow">{eyebrow}</p>}
       <h2 className="section-title">{title}</h2>
       {children && <div className="section-intro">{children}</div>}
     </header>
@@ -63,16 +64,21 @@ function TableWrap({ children, label }: { children: ReactNode; label: string }) 
   );
 }
 
-const DIRECTION: Record<ChangeDirection, { cls: string; label: string }> = {
-  improved: { cls: "pill--good", label: "↑ Improved" },
-  declined: { cls: "pill--bad", label: "↓ Declined" },
-  unchanged: { cls: "", label: "→ Unchanged" },
+const DIRECTION: Record<ChangeDirection, { cls: string; label: string; icon?: ReactNode }> = {
+  improved: { cls: "pill--good", label: "Improved", icon: <IconTrendUp /> },
+  declined: { cls: "pill--bad", label: "Declined", icon: <IconTrendDown /> },
+  unchanged: { cls: "", label: "Unchanged", icon: <IconTrendFlat /> },
   insufficient: { cls: "pill--muted", label: "Too few responses" },
 };
 
 export function DirectionPill({ direction }: { direction: ChangeDirection }) {
   const d = DIRECTION[direction];
-  return <span className={`pill ${d.cls}`}>{d.label}</span>;
+  return (
+    <span className={`pill ${d.cls}`}>
+      {d.icon}
+      {d.label}
+    </span>
+  );
 }
 
 // --- Empty state ------------------------------------------------------------------------
@@ -82,10 +88,7 @@ export function EmptyState() {
   return (
     <div className="empty">
       <div className="empty__art" aria-hidden="true">
-        <svg viewBox="0 0 64 64" width="56" height="56">
-          <rect x="6" y="10" width="52" height="40" rx="8" fill="none" stroke="currentColor" strokeWidth="2" />
-          <path d="M16 38v-8M26 38V24M36 38v-4M46 38V20" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-        </svg>
+        <IconChart size={48} />
       </div>
       <h2 className="h2">No responses yet</h2>
       <p className="muted">
@@ -132,7 +135,7 @@ export function Overview({ r }: { r: AnalyticsReport }) {
   const max = r.survey.knowledgeMax;
   return (
     <>
-      <SectionHeader eyebrow="Overview" title="Collection at a glance">
+      <SectionHeader title="Collection at a glance">
         Knowledge score is the sum of {r.survey.knowledgeItemCount} scenario items, out of {max}. Survey version {r.survey.version}.
       </SectionHeader>
 
@@ -222,7 +225,7 @@ export function Comparison({ r }: { r: AnalyticsReport }) {
   const ind = r.comparison.independent;
   return (
     <>
-      <SectionHeader eyebrow="PRE vs POST" title="What changed — and what we can claim">
+      <SectionHeader title="What changed — and what we can claim">
         Paired results use only participants whose anonymous code appears in both surveys. They are the primary comparison.
       </SectionHeader>
 
@@ -357,7 +360,7 @@ const fmtP = (p: number) => (p < 0.001 ? "< .001" : `= ${pval(p)}`);
 export function Questions({ r, expandAll }: { r: AnalyticsReport; expandAll: boolean }) {
   return (
     <>
-      <SectionHeader eyebrow="Questions" title="Where awareness is strong, weak and shifting">
+      <SectionHeader title="Where awareness is strong, weak and shifting">
         Accuracy is the mean item score (the share answering correctly; the multi-select item uses partial credit). “Observed” labels are descriptive:
         a change of at least 10 percentage points with five or more responses per stage. They are not significance tests.
       </SectionHeader>
@@ -400,7 +403,7 @@ export function Questions({ r, expandAll }: { r: AnalyticsReport; expandAll: boo
                     Q{m.itemNumber} {m.shortLabel} · chose “{m.optionLabel}” · {m.count} {STAGE_LABEL[m.stage]} respondent{m.count === 1 ? "" : "s"}
                   </div>
                 </div>
-                <span className={`pill ${m.stage === "post" ? "pill--accent" : "pill--pre"}`}>{STAGE_LABEL[m.stage]}</span>
+                <span className={`pill ${m.stage === "post" ? "pill--post" : "pill--pre"}`}>{STAGE_LABEL[m.stage]}</span>
               </li>
             ))}
           </ol>
@@ -430,9 +433,7 @@ function ItemRow({ item, expandAll }: { item: ItemAnalytics; expandAll: boolean 
           <DirectionPill direction={item.change.direction} />
         </span>
         <span className="item__chev" aria-hidden="true">
-          <svg width="16" height="16" viewBox="0 0 16 16">
-            <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <IconChevronDown size={18} />
         </span>
       </summary>
       <div className="item__body">
@@ -453,7 +454,7 @@ function ItemRow({ item, expandAll }: { item: ItemAnalytics; expandAll: boolean 
           <div>
             <dt>Paired: became correct / became wrong</dt>
             <dd className="tabular">
-              {item.paired.n ? `${item.paired.improved} ↑ / ${item.paired.declined} ↓ of ${item.paired.n}` : "No pairs"}
+              {item.paired.n ? `${item.paired.improved} improved / ${item.paired.declined} declined of ${item.paired.n}` : "No pairs"}
             </dd>
           </div>
           <div>
@@ -534,7 +535,7 @@ export function Perception({ r }: { r: AnalyticsReport }) {
   ];
   return (
     <>
-      <SectionHeader eyebrow="Perception" title="Perceived vs demonstrated awareness">
+      <SectionHeader title="Perceived vs demonstrated awareness">
         Self-ratings are kept separate from the knowledge score so the two can be compared. Overconfidence matters: people who think they can't
         be fooled tend to check less.
       </SectionHeader>
@@ -589,7 +590,7 @@ export function Perception({ r }: { r: AnalyticsReport }) {
 export function Sample({ r }: { r: AnalyticsReport }) {
   return (
     <>
-      <SectionHeader eyebrow="Sample" title="Who took part">
+      <SectionHeader title="Who took part">
         Background questions were optional and asked only in PRE. Mean score is the average PRE knowledge score of respondents who chose that
         option — descriptive only; small groups are unreliable.
       </SectionHeader>
@@ -711,7 +712,7 @@ function CategoricalTable({ stat, showMean, multi }: { stat: CategoricalStat; sh
 
 // --- Exports ---------------------------------------------------------------------------------------
 
-export function Exports({ includeDemo }: { includeDemo: boolean }) {
+export function Exports({ includeDemo, demoInstance }: { includeDemo: boolean; demoInstance?: boolean }) {
   const q = includeDemo ? "?includeDemo=1" : "";
   const files = [
     {
@@ -737,21 +738,23 @@ export function Exports({ includeDemo }: { includeDemo: boolean }) {
   ];
   return (
     <>
-      <SectionHeader eyebrow="Exports" title="Download the data">
+      <SectionHeader title="Download the data">
         Exports are generated from the database at the moment you click.{" "}
-        {includeDemo ? (
+        {demoInstance ? (
+          <strong className="demo-text">
+            This is the demonstration instance: every file contains synthetic data and is named -DEMO-INSTANCE.
+          </strong>
+        ) : includeDemo ? (
           <strong className="demo-text">Demonstration data is currently INCLUDED and files are named accordingly.</strong>
         ) : (
-          "Demonstration data is excluded."
+          "Rows flagged as demonstration data are excluded."
         )}
       </SectionHeader>
       <div className="export-grid">
         {files.map((f) => (
           <a key={f.href} className="export" href={f.href} download>
             <span className="export__icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" />
-              </svg>
+              <IconDownload size={18} />
             </span>
             <span>
               <span className="export__title">{f.title}</span>
@@ -785,7 +788,7 @@ export function AnswerKey({ onUnauthorized }: { onUnauthorized: () => void }) {
 
   return (
     <>
-      <SectionHeader eyebrow="Answer key" title="Questions, correct answers and rationale">
+      <SectionHeader title="Questions, correct answers and rationale">
         For the team only. Participants never receive this. Only the ten scenario items are scored.
       </SectionHeader>
       {error && <div className="notice notice--bad">{error}</div>}
@@ -813,7 +816,7 @@ export function AnswerKey({ onUnauthorized }: { onUnauthorized: () => void }) {
                   {q.options.map((o) => (
                     <li key={o.id} className={o.isCorrect ? "is-correct" : ""}>
                       <span className="key__marker" aria-hidden="true">
-                        {o.isCorrect ? "✓" : ""}
+                        {o.isCorrect ? <IconCheck size={16} label="Correct" /> : null}
                       </span>
                       <span>
                         <span className={o.mono ? "mono" : ""}>{o.label}</span>
@@ -879,7 +882,7 @@ export function Withdraw({ onDone, onUnauthorized }: { onDone: () => void; onUna
 
   return (
     <>
-      <SectionHeader eyebrow="Withdrawal" title="Remove a participant's data">
+      <SectionHeader title="Remove a participant's data">
         If a participant asks to withdraw, they send you their anonymous code. This permanently deletes every PRE and POST response stored under
         it. It cannot be undone.
       </SectionHeader>

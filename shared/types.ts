@@ -233,6 +233,8 @@ export interface CategoricalStat {
 export interface AnalyticsReport {
   generatedAt: string;
   includesDemo: boolean;
+  /** "demo" when the server runs against the synthetic demonstration database. */
+  instance: "live" | "demo";
   demoResponsesInDatabase: number;
   survey: { version: string; title: string; knowledgeMax: number; knowledgeItemCount: number };
   overview: {
