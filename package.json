@@ -8,12 +8,16 @@
     "node": ">=22"
   },
   "scripts": {
+    "predev": "node scripts/check-node.mjs",
     "dev": "concurrently -k -n api,web -c blue,magenta \"tsx watch server/index.ts\" \"vite\"",
     "build": "tsc --noEmit -p tsconfig.json && vite build",
+    "prestart": "node scripts/check-node.mjs",
     "start": "NODE_ENV=production tsx server/index.ts",
+    "predb:init": "node scripts/check-node.mjs",
     "db:init": "tsx server/scripts/init-db.ts",
     "db:seed-demo": "tsx server/scripts/seed-demo.ts",
     "db:purge-demo": "tsx server/scripts/purge-demo.ts",
+    "pretest": "node scripts/check-node.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },

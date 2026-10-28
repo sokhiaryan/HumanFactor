@@ -36,7 +36,11 @@ Locally these are `http://localhost:5173/s/pre`, `/s/post` and `/team` in develo
 
 ## Quick start (local)
 
-Requirements: **Node.js 22+** (see `.nvmrc`; better-sqlite3 crashes on the Node 20 build used here).
+Requirements: **Node.js 22+** (see `.nvmrc`; better-sqlite3 crashes on Node 20). The npm scripts
+check this and stop with a clear message on older versions.
+
+> **“We couldn't reach the server”** after clicking *I agree* means the page is open but the API
+> isn't running. Keep `npm run dev` running in a terminal (on Node 22) while you use the site.
 
 ```bash
 nvm use            # or otherwise put Node 22 on your PATH
