@@ -14,6 +14,9 @@ with paired PRE/POST analytics and exports for the report.
 - **Real persistence**: SQLite with versioned migrations. Scoring and validation happen only on
   the server.
 
+📘 **New to the project? Start with the [Team Guide](docs/GUIDE.md)**: setup, running the
+study, every dashboard tab, exports, participant support and troubleshooting.
+
 The question rationale, scoring rules and statistical methods are in
 **[docs/SURVEY_DESIGN.md](docs/SURVEY_DESIGN.md)**.
 
